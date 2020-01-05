@@ -1,6 +1,6 @@
-import subprocess as sp
+# import subprocess as sp
 
-filnum: {
+filnum = {
     'a': 1,
     'b': 2,
     'c': 3,
@@ -64,7 +64,7 @@ class King(Piece):
         validmoves = set()
         available = empty
         for rnk, fil in available:
-            if abs(rnk - coor[0]) <= 1 and abs(filnum[fil] - filnum[coor[1]]) <= 1:
+            if abs(rnk - coor[0]) <= 1 and abs(filnum[fil] - filnum[coor[1]]) <= 1:  # noqa: E501
                 if not (rnk, fil) == coor:
                     validmoves.add((rnk, fil))
         return validmoves
@@ -103,16 +103,16 @@ class Knight(Piece):
     def can_move_to(self, coor):
         validmoves = set()
         for rnk, fil in empty:
-            if abs(rnk - coor[0]) == 2 and abs(filnum[fil] - filnum[coor[1]]) == 1:
+            if abs(rnk - coor[0]) == 2 and abs(filnum[fil] - filnum[coor[1]]) == 1:  # noqa: E501
                 validmoves.add((rnk, fil))
-            elif abs(rnk - coor[0]) == 1 and abs(filnum[fil] - filnum[coor[1]]) == 2:
+            elif abs(rnk - coor[0]) == 1 and abs(filnum[fil] - filnum[coor[1]]) == 2:  # noqa: E501
                 validmoves.add((rnk, fil))
         return validmoves
 
 
 class Pawn(Piece):
     def can_move_to(self, coor):
-        validmoves = {(coor[0] + 1, coor[1] + self.team), (coor[0] - 1, coor[1] + self.team)}
+        validmoves = {(coor[0] + 1, coor[1] + self.team), (coor[0] - 1, coor[1] + self.team)}  # noqa: E501
         for rnk, fil in empty:
             if (rnk, fil) in validmoves:
                 validmoves.remove((rnk, fil))
