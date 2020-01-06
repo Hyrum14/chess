@@ -42,6 +42,10 @@ piecepos = {
     ('b', 8): 'Lblack knight',
     ('g', 8): 'Rblack knight'
 }
+enemies = {
+    'white': 'black',
+    'black': 'white'
+}
 Wpawns = set()
 Bpawns = set()
 selected = []
@@ -53,7 +57,7 @@ class Piece:
         self.alive = True
         self.name = name
         self.team = color
-        if color == 'White':
+        if color == 'white':
             self.direction = 1
         else:
             self.direction = -1
@@ -62,7 +66,11 @@ class Piece:
 class King(Piece):
     def can_move_to(self, coor):
         validmoves = set()
-        available = empty
+        enemy = set()
+        for rnk, fil in piecepos:
+            if enemies[self.team] in piecepos[(rnk, fil)]:
+                enemy.add((rnk, fil))
+        available = empty + enemy
         for rnk, fil in available:
             if abs(rnk - coor[0]) <= 1 and abs(filnum[fil] - filnum[coor[1]]) <= 1:  # noqa: E501
                 if not (rnk, fil) == coor:
@@ -138,6 +146,10 @@ def make_board():
                 print(piecepos[(rnk, fil)])
             if not fil == 'h':
                 print('|')
+
+
+def take_piece(location):
+    del(piecepos[location])
 
 
 for fil in 'abcdefgh':
