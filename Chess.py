@@ -195,6 +195,8 @@ def make_board():
                 print(piecepos[(rnk, fil)])
             if not fil == 'h':
                 print('|')
+        if rnk > 1:
+            print('-------------------------------')
 
 
 def move(oldcoor, newcoor):
