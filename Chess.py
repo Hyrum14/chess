@@ -1,4 +1,4 @@
-# import subprocess as sp
+import subprocess as sp
 
 filnum = {
     'a': 1,
@@ -46,9 +46,6 @@ class Piece:
 
 
 class King(Piece):
-    def __init__(self, name, color):
-        super().__init__(name, color)
-
     def can_move_to(self, coor):
         validmoves = set()
         enemy = set()
@@ -68,9 +65,6 @@ class King(Piece):
 
 
 class Queen(Piece):
-    def __init__(self, name, color):
-        super().__init__(name, color)
-
     def can_move_to(self, coor):
         validmoves = set()
         enemy = set()
@@ -91,9 +85,6 @@ class Queen(Piece):
 
 
 class Rook(Piece):
-    def __init__(self, name, color):
-        super().__init__(name, color)
-
     def can_move_to(self, coor):
         validmoves = set()
         enemy = set()
@@ -112,9 +103,6 @@ class Rook(Piece):
 
 
 class Bishop(Piece):
-    def __init__(self, name, color):
-        super().__init__(name, color)
-
     def can_move_to(self, coor):
         validmoves = set()
         enemy = set()
@@ -133,9 +121,6 @@ class Bishop(Piece):
 
 
 class Knight(Piece):
-    def __init__(self, name, color):
-        super().__init__(name, color)
-
     def can_move_to(self, coor):
         validmoves = set()
         enemy = set()
@@ -156,9 +141,6 @@ class Knight(Piece):
 
 
 class Pawn(Piece):
-    def __init__(self, name, color):
-        super().__init__(name, color)
-
     def can_move_to(self, coor):
         validmoves = {(coor[0] + 1, coor[1] + self.team), (coor[0] - 1, coor[1] + self.team)}  # noqa: E501
         enemy = set()
@@ -204,6 +186,31 @@ def move(oldcoor, newcoor):
         del(piecepos[newcoor])
     piecepos[newcoor] = piecepos[oldcoor]
     del(piecepos[oldcoor])
+
+
+def validate(item, rnkorfil):
+    if rnkorfil:
+        if item > 8:
+            validate(input('Number too big, enter again: '), True)
+        if item < 1:
+            validate(input('Number too small, enter again: '), True)
+    else:
+        if not item.isalpha:
+            validate(input('Invalid character, enter again: '), False)
+        if item not in 'abcdefgh':
+            validate(input('Letter out of range, enter again: '), False)
+    return item
+
+def get_input():
+    while True:
+        try:
+            rnkchoose = int(input('Choose a rank: '))
+            break
+        except TypeError:
+            print('Invalid character')
+    rnkchoose = validate(rnkchoose, True)
+    filchoose = validate(input('Choose a file: '), False)
+    return (rnkchoose, filchoose)
     
 
 piecepos = {
@@ -232,3 +239,5 @@ for rnk in '6543':
     rnk = int(rnk)
     for fil in 'abcdefgh':
         empty.append((rnk, fil))
+while True:
+    sp.call('clear', shell=True)
