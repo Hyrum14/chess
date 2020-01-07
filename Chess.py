@@ -25,7 +25,7 @@ pieces = {
     'black pawn': '/u265f'
 }
 piecepos = {
-    ('e', 1): 'white king',
+    ('e', 1): 'white king', # TODO switch to piece objects
     ('d', 1): 'white queen',
     ('a', 1): 'Lwhite rook',
     ('h', 1): 'Rwhite rook',
@@ -54,7 +54,6 @@ empty = []
 
 class Piece:
     def __init__(self, name, color):
-        self.alive = True
         self.name = name
         self.team = color
         if color == 'white':
@@ -64,11 +63,14 @@ class Piece:
 
 
 class King(Piece):
+    def __init__(self, name, color):  # TODO copy to other pieces
+        super().__init__(name, color)
+
     def can_move_to(self, coor):
         validmoves = set()
         enemy = set()
         for rnk, fil in piecepos:
-            if enemies[self.team] in piecepos[(rnk, fil)]:
+            if enemies[self.team] in piecepos[(rnk, fil)]:  # TODO change to referencing piece qualities
                 enemy.add((rnk, fil))
         available = empty + enemy
         for rnk, fil in available:
@@ -79,6 +81,9 @@ class King(Piece):
 
 
 class Queen(Piece):
+    def __init__(self, name, color):  # TODO copy to other pieces
+        super().__init__(name, color)
+
     def can_move_to(self, coor):
         validmoves = set()
         for rnk, fil in empty:
@@ -90,6 +95,9 @@ class Queen(Piece):
 
 
 class Rook(Piece):
+    def __init__(self, name, color):  # TODO copy to other pieces
+        super().__init__(name, color)
+
     def can_move_to(self, coor):
         validmoves = set()
         for rnk, fil in empty:
@@ -99,6 +107,9 @@ class Rook(Piece):
 
 
 class Bishop(Piece):
+    def __init__(self, name, color):  # TODO copy to other pieces
+        super().__init__(name, color)
+
     def can_move_to(self, coor):
         validmoves = set()
         for rnk, fil in empty:
@@ -108,6 +119,9 @@ class Bishop(Piece):
 
 
 class Knight(Piece):
+    def __init__(self, name, color):  # TODO copy to other pieces
+        super().__init__(name, color)
+
     def can_move_to(self, coor):
         validmoves = set()
         for rnk, fil in empty:
@@ -119,6 +133,9 @@ class Knight(Piece):
 
 
 class Pawn(Piece):
+    def __init__(self, name, color):  # TODO copy to other pieces
+        super().__init__(name, color)
+
     def can_move_to(self, coor):
         validmoves = {(coor[0] + 1, coor[1] + self.team), (coor[0] - 1, coor[1] + self.team)}  # noqa: E501
         for rnk, fil in empty:
