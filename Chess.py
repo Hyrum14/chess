@@ -10,35 +10,61 @@ filnum = {
     'g': 7,
     'h': 8
 }
-pieces = {
-    'white king': '/u2654',
-    'white queen': '/u2655',
-    'white rook': '/u2656',
-    'white bishop': '/u2657',
-    'white knight': '/u2658',
-    'white pawn': '/u2659',
-    'black king': '/u265a',
-    'black queen': '/u265b',
-    'black rook': '/u265c',
-    'black bishop': '/u265d',
-    'black knight': '/u265e',
-    'black pawn': '/u265f'
-}
-piecepos = {}
 enemies = {
     'white': 'black',
     'black': 'white'
 }
 Wpawns = set()
 Bpawns = set()
-selected = []
-empty = []
+selectedavailable = []
+empty = set()
+
+
+class Game:
+    def __init__(self):
+        self.board = self.build_board()
+    
+    def turn(self):
+        pass # TODO write function including select and move functions
+    
+    @staticmethod
+    def build_board():
+        piecepos = {
+            (1, 'e'): King('white'),
+            (1, 'd'): Queen('white'),
+            (1, 'a'): Rook('white'),
+            (1, 'h'): Rook('white'),
+            (1, 'c'): Bishop('white'),
+            (1, 'f'): Bishop('white'),
+            (1, 'b'): Knight('white'),
+            (1, 'g'): Knight('white'),
+            (8, 'e'): King('black'),
+            (8, 'd'): Queen('black'),
+            (8, 'a'): Rook('black'),
+            (8, 'h'): Rook('black'),
+            (8, 'c'): Bishop('black'),
+            (8, 'f'): Bishop('black'),
+            (8, 'b'): Knight('black'),
+            (8, 'g'): Knight('black')
+        }
+        for fil in 'abcdefgh':
+            piecepos[(2, fil)] = Pawn('white', piecepos)
+            piecepos[(7, fil)] = Pawn('black', piecepos)
+        return piecepos
+    
+    def move(self, curr_pos, new_pos):
+        try:
+            piece = self.board[curr_pos]
+        except KeyError:
+            return False
+        self.board[new_pos] = piece
+        del self.board[curr_pos]
+        return True
 
 
 class Piece:
-    def __init__(self, name, color):
-        self.name = name
-        self.team = color
+    def __init__(self, color):
+        self.color = color
         if color == 'white':
             self.direction = 1
         else:
@@ -46,146 +72,195 @@ class Piece:
 
 
 class King(Piece):
-    def can_move_to(self, coor):
-        validmoves = set()
-        enemy = set()
-        for rnk, fil in piecepos:
-            if piecepos[(rnk, fil)].team in enemies[self.team]:
-                enemy.add((rnk, fil))
-        if self.team == 'white':
-            pawns = Bpawns
+    def __init__(self, color):
+        super().__init__(color)
+        if color == 'white':
+            self.symbol = '\u2654'
         else:
-            pawns = Wpawns
-        available = empty + enemy + pawns
-        for rnk, fil in available:
-            if abs(rnk - coor[0]) <= 1 and abs(filnum[fil] - filnum[coor[1]]) <= 1:  # noqa: E501
-                if not (rnk, fil) == coor:
+            self.symbol = '\u265a'
+
+    def can_move_to(self, pos, pieces):
+        validmoves = set()
+        inrnk, infil = pos
+        for rnk in range(inrnk - 1, inrnk + 1):
+            for fil in range(filnum[infil] - 1, filnum[infil] + 1):
+                fil = ' abcdefgh'[fil]
+                if (rnk, fil) in pieces:
+                    if pieces[(rnk, fil)].color == self.color:
+                        pass
+                    elif rnk in range(1,8) and fil in 'abcdefgh':
+                        pass
+                    else:
+                        validmoves.add((rnk, fil))
+                else:
                     validmoves.add((rnk, fil))
         return validmoves
 
 
 class Queen(Piece):
-    def can_move_to(self, coor):
-        validmoves = set()
-        enemy = set()
-        for rnk, fil in piecepos:
-            if piecepos[(rnk, fil)].team in enemies[self.team]:
-                enemy.add((rnk, fil))
-        if self.team == 'white':
-            pawns = Bpawns
+    def __init__(self, color):
+        super().__init__(color)
+        if color == 'white':
+            self.symbol = '\u2655'
         else:
-            pawns = Wpawns
-        available = empty + enemy + pawns
-        for rnk, fil in available:
-            if abs(rnk - coor[0]) == abs(filnum[fil] - filnum[coor[1]]):
-                validmoves.add((rnk, fil))
-            elif rnk == coor[0] or fil == coor[1]:
-                validmoves.add((rnk, fil))
-        return validmoves
+            self.symbol = '\u265b'
+
+    def can_move_to(self, pos, pieces):
+        validmoves = set()
+        inrnk, infil = pos
+        for x in (-7, 7):
+            for rnk in range(inrnk, inrnk + x):
+                if rnk not in range(1, 8):
+                    break
+                elif (rnk, infil) in pieces:
+                    if pieces[(rnk, infil)].color == self.color:
+                        break
+                else:
+                    validmoves.add((rnk, infil))
+            for fil in range(filnum[infil], filnum[infil] + x):
+                fil = ' abcdefgh'[fil]
+                if fil not in range(1, 8):
+                    break
+                elif (inrnk, ' abcdefgh'[fil]) in pieces:
+                    if pieces[(inrnk, ' abcdefgh'[fil])].color == self.color:
+                        break
+                else:
+                    validmoves.add((inrnk, ' abcdefgh'[fil]))
+        return validmoves # TODO add diagonal path
 
 
 class Rook(Piece):
-    def can_move_to(self, coor):
-        validmoves = set()
-        enemy = set()
-        for rnk, fil in piecepos:
-            if piecepos[(rnk, fil)].team in enemies[self.team]:
-                enemy.add((rnk, fil))
-        if self.team == 'white':
-            pawns = Bpawns
+    def __init__(self, color):
+        super().__init__(color)
+        if color == 'white':
+            self.symbol = '\u2656'
         else:
-            pawns = Wpawns
-        available = empty + enemy + pawns
-        for rnk, fil in available:
-            if rnk == coor[0] or fil == coor[1]:
-                validmoves.add((rnk, fil))
+            self.symbol = '\u265c'
+
+    def can_move_to(self, pos, pieces):
+        validmoves = set()
+        inrnk, infil = pos
+        for x in (-7, 7):
+            for rnk in range(inrnk, inrnk + x):
+                if rnk not in range(1, 8):
+                    break
+                elif (rnk, infil) in pieces:
+                    if pieces[(rnk, infil)].color == self.color:
+                        break
+                else:
+                    validmoves.add((rnk, infil))
+            for fil in range(filnum[infil], filnum[infil] + x):
+                fil = ' abcdefgh'[fil]
+                if fil not in range(1, 8):
+                    break
+                elif (inrnk, ' abcdefgh'[fil]) in pieces:
+                    if pieces[(inrnk, ' abcdefgh'[fil])].color == self.color:
+                        break
+                else:
+                    validmoves.add((inrnk, ' abcdefgh'[fil]))
         return validmoves
 
 
 class Bishop(Piece):
-    def can_move_to(self, coor):
+    def __init__(self, color):
+        super().__init__(color)
+        if color == 'white':
+            self.symbol = '\u2657'
+        else:
+            self.symbol = '\u265d'
+
+    def can_move_to(self, pos, pieces):
         validmoves = set()
         enemy = set()
-        for rnk, fil in piecepos:
-            if piecepos[(rnk, fil)].team in enemies[self.team]:
+        for rnk, fil in pieces:
+            if pieces[(rnk, fil)].color in enemies[self.color]:
                 enemy.add((rnk, fil))
-        if self.team == 'white':
+        if self.color == 'white':
             pawns = Bpawns
         else:
             pawns = Wpawns
-        available = empty + enemy + pawns
+        available = empty.union(enemy.union(pawns))
         for rnk, fil in available:
-            if abs(rnk - coor[0]) == abs(filnum[fil] - filnum[coor[1]]):
+            if abs(rnk - pos[0]) == abs(filnum[fil] - filnum[pos[1]]):
                 validmoves.add((rnk, fil))
         return validmoves
 
 
 class Knight(Piece):
-    def can_move_to(self, coor):
-        validmoves = set()
-        enemy = set()
-        for rnk, fil in piecepos:
-            if piecepos[(rnk, fil)].team in enemies[self.team]:
-                enemy.add((rnk, fil))
-        if self.team == 'white':
-            pawns = Bpawns
+    def __init__(self, color):
+        super().__init__(color)
+        if color == 'white':
+            self.symbol = '\u2658'
         else:
-            pawns = Wpawns
-        available = empty + enemy + pawns
-        for rnk, fil in available:
-            if abs(rnk - coor[0]) == 2 and abs(filnum[fil] - filnum[coor[1]]) == 1:  # noqa: E501
-                validmoves.add((rnk, fil))
-            elif abs(rnk - coor[0]) == 1 and abs(filnum[fil] - filnum[coor[1]]) == 2:  # noqa: E501
-                validmoves.add((rnk, fil))
+            self.symbol = '\u265e'
+
+    def can_move_to(self, pos, pieces):
+        validmoves = set()
+        inrnk, infil = pos
+        infil = filnum[infil]
+        for x in (-2, 2):
+            for y in (-1, 1):
+                validmoves.add((inrnk + x, ' abcdefgh'[infil + y]))
+                validmoves.add((inrnk + y, ' abcdefgh'[infil + x]))
+        for rnk, fil in validmoves:
+            if (rnk, fil) in pieces:
+                if pieces[(rnk, fil)].color == self.color:
+                    validmoves.remove((rnk, fil))
+            elif rnk not in range(1, 8) or fil not in 'abcdefgh':
+                validmoves.remove((rnk, fil))
         return validmoves
 
 
 class Pawn(Piece):
-    def can_move_to(self, coor):
-        validmoves = {(coor[0] + 1, coor[1] + self.team), (coor[0] - 1, coor[1] + self.team)}  # noqa: E501
-        enemy = set()
-        for rnk, fil in piecepos:
-            if piecepos[(rnk, fil)].team in enemies[self.team]:
-                enemy.add((rnk, fil))
-        if self.team == 'white':
-            pawns = Bpawns
+    def __init__(self, color, pieces):
+        super().__init__(color)
+        if color == 'white':
+            self.symbol = '\u2659'
         else:
-            pawns = Wpawns
-        available = empty + enemy + pawns
-        for rnk, fil in available:
+            self.symbol = '\u265e'
+
+    def can_move_to(self, pos, pieces):
+        validmoves = {(pos[0] + 1, pos[1] + self.color), (pos[0] - 1, pos[1] + self.color)}  # noqa: E501
+        inrnk, infil = pos
+        for rnk, fil in validmoves:
             if (rnk, fil) in empty:
                 validmoves.remove((rnk, fil))
-            if rnk - coor[0] == 1 * self.team:
-                validmoves.add((rnk, fil))
+            elif (rnk, fil) in pieces:
+                if pieces[(rnk, fil)].color == self.color:
+                    validmoves.remove((rnk, fil))
+        move = (inrnk + 1 * self.color, infil)
+        if move in empty:
+            pass
+        elif pieces[(move)].color == self.color:
+            pass
+        else:
+            validmoves.add((rnk, fil))
         return validmoves
 
 
-def make_board():
+def draw_board(pieces):
     for rnk in '87654321':
         rnk = int(rnk)
-        print(rnk)
+        print(rnk, end='')
         for fil in 'abcdefgh':
             if (rnk, fil) in empty:
-                print('   ')
-            elif (rnk, fil) in selected:
-                print(' /u2022 ')
+                print('   ', end='')
+            elif (rnk, fil) in selectedavailable:
+                print(' \u2022 ', end='')
             elif (rnk, fil) in Wpawns:
-                print(pieces['white pawn'])
+                print(' ' + '\u2659' + ' ', end='')
             elif (rnk, fil) in Bpawns:
-                print(pieces['black pawn'])
-            elif (rnk, fil) in piecepos:
-                print(piecepos[(rnk, fil)])
+                print(' ' + '\u265f' + ' ', end='')
+            elif (rnk, fil) in pieces:
+                print(' ' + pieces[(rnk, fil)].symbol, end=' ')
             if not fil == 'h':
-                print('|')
+                print('|', end='')
+            else:
+                print('\n', end='')
         if rnk > 1:
-            print('-------------------------------')
-
-
-def move(oldcoor, newcoor):
-    if newcoor in piecepos:
-        del(piecepos[newcoor])
-    piecepos[newcoor] = piecepos[oldcoor]
-    del(piecepos[oldcoor])
+            print(' -------------------------------')
+        else:
+            print('  a   b   c   d   e   f   g   h ')
 
 
 def validate(item, rnkorfil):
@@ -211,26 +286,7 @@ def get_input():
     rnkchoose = validate(rnkchoose, True)
     filchoose = validate(input('Choose a file: '), False)
     return (rnkchoose, filchoose)
-    
 
-piecepos = {
-    ('e', 1): King('white king', 'white'),
-    ('d', 1): Queen('white queen', 'white'),
-    ('a', 1): Rook('Lwhite rook', 'white'),
-    ('h', 1): Rook('Rwhite rook', 'white'),
-    ('c', 1): Bishop('Lwhite bishop', 'white'),
-    ('f', 1): Bishop('Rwhite bishop', 'white'),
-    ('b', 1): Knight('Lwhite knight', 'white'),
-    ('g', 1): Knight('Rwhite knight', 'white'),
-    ('e', 8): King('black king', 'black'),
-    ('d', 8): Queen('black queen', 'black'),
-    ('a', 8): Rook('Lblack rook', 'black'),
-    ('h', 8): Rook('Rblack rook', 'black'),
-    ('c', 8): Bishop('Lblack bishop', 'black'),
-    ('f', 8): Bishop('Rblack bishop', 'black'),
-    ('b', 8): Knight('Lblack knight', 'black'),
-    ('g', 8): Knight('Rblack knight', 'black')
-}
 
 for fil in 'abcdefgh':
     Wpawns.add((2, fil))
@@ -238,6 +294,16 @@ for fil in 'abcdefgh':
 for rnk in '6543':
     rnk = int(rnk)
     for fil in 'abcdefgh':
-        empty.append((rnk, fil))
-while True:
-    sp.call('clear', shell=True)
+        empty.add((rnk, fil))
+#while True: TODO rebuild in board object
+#    sp.call('clear', shell=True)
+#    draw_board()
+#    print('Enter a piece to move')
+#    entered = get_input()
+#    selectedavailable = piecepos[entered].can_move_to(entered)
+#    print('Enter the spot you want to move to, or a different piece: ')
+#    entered = get_input()
+#    if entered in selectedavailable:
+#        move(old, entered)
+#    else:
+#        selectedavailable = piecepos[entered].can_move_to(entered)
