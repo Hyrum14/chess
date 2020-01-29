@@ -126,7 +126,18 @@ class Queen(Piece):
                         break
                 else:
                     validmoves.add((inrnk, ' abcdefgh'[fil]))
-        return validmoves # TODO add diagonal path
+        for x in (-1, 1):
+            for y in (-1, 1):
+                for i in (1, 7):
+                    rnk, fil = (inrnk + x * i, ' abcdefgh'[filnum[infil] + y * i])
+                    if rnk not in range(1, 8) or fil not in 'abcdefgh':
+                        break
+                    elif (rnk, fil) in pieces:
+                        if pieces[(rnk, fil)].color == self.color:
+                            break
+                    else:
+                        validmoves.add((rnk, fil))
+        return validmoves
 
 
 class Rook(Piece):
@@ -171,18 +182,18 @@ class Bishop(Piece):
 
     def can_move_to(self, pos, pieces):
         validmoves = set()
-        enemy = set()
-        for rnk, fil in pieces:
-            if pieces[(rnk, fil)].color in enemies[self.color]:
-                enemy.add((rnk, fil))
-        if self.color == 'white':
-            pawns = Bpawns
-        else:
-            pawns = Wpawns
-        available = empty.union(enemy.union(pawns))
-        for rnk, fil in available:
-            if abs(rnk - pos[0]) == abs(filnum[fil] - filnum[pos[1]]):
-                validmoves.add((rnk, fil))
+        inrnk, infil = pos
+        for x in (-1, 1):
+            for y in (-1, 1):
+                for i in (1, 7):
+                    rnk, fil = (inrnk + x * i, ' abcdefgh'[filnum[infil] + y * i])
+                    if rnk not in range(1, 8) or fil not in 'abcdefgh':
+                        break
+                    elif (rnk, fil) in pieces:
+                        if pieces[(rnk, fil)].color == self.color:
+                            break
+                    else:
+                        validmoves.add((rnk, fil))
         return validmoves
 
 
@@ -229,9 +240,7 @@ class Pawn(Piece):
                 if pieces[(rnk, fil)].color == self.color:
                     validmoves.remove((rnk, fil))
         move = (inrnk + 1 * self.color, infil)
-        if move in empty:
-            pass
-        elif pieces[(move)].color == self.color:
+        if move in pieces:
             pass
         else:
             validmoves.add((rnk, fil))
@@ -275,6 +284,7 @@ def validate(item, rnkorfil):
         if item not in 'abcdefgh':
             validate(input('Letter out of range, enter again: '), False)
     return item
+
 
 def get_input():
     while True:
